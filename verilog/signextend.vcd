@@ -1,0 +1,31 @@
+$date
+	Fri Nov  2 00:57:29 2018
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module testSignExtend $end
+$scope module dut $end
+$var wire 16 ! immediate [15:0] $end
+$var wire 32 " extended [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#100
+$dumpvars
+b1 "
+b1 !
+$end
+#110
+b11111111111111111111111111111110 "
+b1111111111111110 !
+#120
+b11111111111111111111111100010110 "
+b1111111100010110 !
+#130
+b111101011110 "
+b111101011110 !
+#140
