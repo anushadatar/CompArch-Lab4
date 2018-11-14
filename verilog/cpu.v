@@ -226,16 +226,16 @@ regfile registerFile(
   .Clk(clk),
   .RegWrite(reg_we_WB),
   .WriteRegister(regWrAddress),
-  .ReadRegister1(instruction[25:21]),
-  .ReadRegister2(instruction[20:16]),
+  .ReadRegister1(instruction_IF[25:21]),
+  .ReadRegister2(instruction_IF[20:16]),
   .WriteData(writeData),
   .ReadData1(readOut1),
   .ReadData2(readOut2)
   );
 
 instructionDecoder opDecoder(
-  .opcode(instruction[31:26]),
-  .functcode(instruction[5:0]),
+  .opcode(instruction_IF[31:26]),
+  .functcode(instruction_IF[5:0]),
   .zero(zeroFlag),
   .dm_we(dm_we_ID),
   .dm_mux(dm_mux_ID),
