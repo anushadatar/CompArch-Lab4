@@ -10,13 +10,13 @@
 
 module cpu(
   input clk
-    );
+);
 
 wire [31:0] pcIn, instruction, dataOut;
 wire [31:0] opA, opB;
 wire [4:0] regWrAddress;
 wire [31:0] writeData;
-wire [31:0] signExtended;
+wire [31:0] imm_ID;
 wire [31:0] branchALUin;
 wire [27:0] jumpShifted;
 wire [31:0] aluResult;
@@ -62,6 +62,100 @@ registerIF regiIF(
   .clk(clk)
 );
 
+registerID regiID(
+  .q_ReadData1(ReadData1_EX),
+  .q_ReadData2(ReadData2_EX),
+  .q_pc(pc_EX),
+  .q_imm(imm_EX),
+  .q_pcmux(pcmux_EX),
+  .q_regmux(regmux_EX),
+  .q_alu_a_mux(alu_a_mux_EX),
+  .q_alu_b_mux(alu_b_mux_EX),
+  .q_dm_mux(dm_mux_EX),
+  .q_alu_op(alu_op_EX),
+  .q_rd(rd_EX),
+  .q_reg_we(reg_we_EX),
+  .q_dm_we(dm_we_EX),
+
+  .d_ReadData1(ReadData1_ID),
+  .d_ReadData2(ReadData2_ID),
+  .d_pc(pc_ID),
+  .d_imm(imm_ID),
+  .d_pcmux(pcmux_ID),
+  .d_regmux(regmux_ID),
+  .d_alu_a_mux(alu_a_mux_ID),
+  .d_alu_b_mux(alu_b_mux_ID),
+  .d_dm_mux(dm_mux_ID),
+  .d_alu_op(alu_op_ID),
+  .d_rd(rd_ID),
+  .d_reg_we(reg_we_EX),
+  .d_dm_we(dm_we_EX),
+
+  .wrenable(1'b1),
+  .clk(clk)
+);
+
+registerEX regiEX(
+  .q_ReadData1(ReadData1_ID),
+  .q_ReadData2(ReadData2_ID),
+  .q_pc(pc_MEM),
+  .q_result(result_MEM),
+  .q_zeroflag(zeroflag_MEM),
+  .q_pcmux(pcmux_MEM),
+  .q_regmux(regmux_MEM),
+  .q_dm_mux(dm_mux_MEM),
+  .q_alu_op(alu_op_MEM),
+  .q_rd(rd_MEM),
+  .q_reg_we(reg_we_MEM),
+  .q_dm_we(dm_we_MEM),
+
+  .d_ReadData1(ReadData1_EX),
+  .d_ReadData2(ReadData2_EX),
+  .d_result(result_EX),
+  .d_pcmux(pcmux_EX),
+  .d_regmux(regmux_EX),
+  .d_zeroflag(zeroflag_EX),
+  .d_dm_mux(dm_mux_EX),
+  .d_pc(pc_EX),
+  .d_rd(rd_EX),
+  .d_reg_we(reg_we_EX),
+  .d_dm_we(dm_we_EX),
+
+  .wrenable(1'b1),
+  .clk(clk)
+);
+
+registerMEM regiMEM(
+  .q_ReadData1(ReadData1_WB),
+  .q_ReadData2(ReadData2_WB),
+  .q_result(result_WB),
+  .q_pcmux(pcmux_WB),
+  .q_regmux(regmux_WB),
+  .q_zeroflag(zeroflag_WB),
+  .q_dm_mux(dm_mux_WB),
+  .q_pc(pc_WB),
+  .q_rd(rd_WB),
+  .q_reg_we(reg_we_WB),
+  .q_pc(dm_we_WB),
+  .q_ReadDataMem(ReadDataMem_WB),
+
+  .d_ReadData1(ReadData1_MEM),
+  .d_ReadData2(ReadData2_MEM),
+  .d_result(result_MEM),
+  .d_pcmux(pcmux_MEM),
+  .d_regmux(regmux_MEM),
+  .d_zeroflag(zeroflag_MEM),
+  .d_dm_mux(dm_mux_MEM),
+  .d_pc(pc_MEM),
+  .d_rd(rd_MEM),
+  .d_reg_we(reg_we_MEM),
+  .d_pc(dm_we_MEM),
+  .d_ReadDataMem(ReadDataMem_MEM)
+  .wrenable(1'b1),
+  .clk(clk)
+);
+
+
 mux4to1by32 muxPC(
   .address(pcmux_WB),
   .input0(pcPlusFour),
@@ -103,7 +197,7 @@ mux2to1by32 muxWD3(
 
 signExtend signExtension(
   .immediate(instruction[15:0]),
-  .extended(signExtended)
+  .extended(imm_ID)
   );
 
 lshift32 shiftSignExt(
@@ -171,7 +265,7 @@ ALU pcBranch(
   .result(branchAddress)
   );
 
-  // assign pcIn = 32'b0;
+// assign pcIn = 32'b0;
 
 // initial begin
 //   pcOut = 32'b0;
