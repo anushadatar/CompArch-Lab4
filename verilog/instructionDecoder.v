@@ -33,17 +33,18 @@ module instructionDecoder(
     input [5:0] functcode,
     input zero,
 
-    output reg regWrite, muxA_en, dm_we, muxWD3_en,
-    output reg [1:0] muxB_en, regWriteAddSelect, muxPC,
-    output reg [2:0] ALUop
+    output reg dm_mux, reg_we, alu_a_mux, alu_b_mux, dm_we,
+    output reg [1:0] regmux, pcmux, 
+    output reg [2:0] alu_op
   );
+
   wire nzero;
   not not0(nzero, zero);
 
   initial begin
-    muxPC = 2'b0;
-    muxA_en = 1'b0;
-    muxB_en = 2'b0;
+    pcmux = 2'b0;
+    alu_a_mux = 1'b0;
+    alu_b_mux = 1'b0;
   end
 
   always @(*) begin
@@ -51,131 +52,131 @@ module instructionDecoder(
 
       `RTYPE: begin
         dm_we <= 1'b0;
-        muxA_en <= 1'b0;
-        muxB_en <= 2'd1;
-        muxWD3_en <= 1'b1;
-        regWriteAddSelect <= 2'd2;
+        alu_a_mux <= 1'b0;
+        alu_b_mux <= 2'd1;
+        dm_mux <= 1'b1;
+        regmux <= 2'd2;
 
         case(functcode)
           `JR: begin
-            regWrite <= 1'b0;
-            muxPC <= 2'd2;
-            ALUop <= 3'd0;
+            reg_we <= 1'b0;
+            pcmux <= 2'd2;
+            alu_op <= 3'd0;
           end
 
           `ADD: begin
-            regWrite <= 1'b1;
-            muxPC <= 2'd0;
-            ALUop <= `ADDSIGNAL;
+            reg_we <= 1'b1;
+            pcmux <= 2'd0;
+            alu_op <= `ADDSIGNAL;
           end
           `SUB: begin
-            regWrite <= 1'b1;
-            muxPC <= 2'd0;
-            ALUop <= `SUBSIGNAL;
+            reg_we <= 1'b1;
+            pcmux <= 2'd0;
+            alu_op <= `SUBSIGNAL;
           end
           `SLT: begin
-            regWrite <= 1'b1;
-            muxPC <= 2'd0;
-            ALUop <= `SLTSIGNAL;
+            reg_we <= 1'b1;
+            pcmux <= 2'd0;
+            alu_op <= `SLTSIGNAL;
           end
 
         endcase
       end
 
       `LW: begin
-        regWrite <= 1'b1;
-        muxA_en <= 1'b0;
+        reg_we <= 1'b1;
+        alu_a_mux <= 1'b0;
         dm_we <= 1'b0;
-        muxWD3_en <= 1'b0;
-        muxB_en <= 2'd0;
-        regWriteAddSelect <= 2'd0;
-        muxPC <= 2'd0;
-        ALUop <= `ADDSIGNAL;
+        dm_mux <= 1'b0;
+        alu_b_mux <= 2'd0;
+        regmux <= 2'd0;
+        pcmux <= 2'd0;
+        alu_op <= `ADDSIGNAL;
       end
 
       `SW: begin
-        regWrite <= 1'b0;
-        muxA_en <= 1'b0;
+        reg_we <= 1'b0;
+        alu_a_mux <= 1'b0;
         dm_we <= 1'b1;
-        muxWD3_en <= 1'b0;
-        muxB_en <= 2'd0;
-        regWriteAddSelect <= 2'b0;
-        muxPC <= 2'd0;
-        ALUop <= `ADDSIGNAL;
+        dm_mux <= 1'b0;
+        alu_b_mux <= 2'd0;
+        regmux <= 2'b0;
+        pcmux <= 2'd0;
+        alu_op <= `ADDSIGNAL;
       end
 
       `BEQ: begin
-        regWrite <= 1'b0;
-        muxA_en <= 1'b0;
+        reg_we <= 1'b0;
+        alu_a_mux <= 1'b0;
         dm_we <= 1'b0;
-        muxWD3_en = 1'b0;
-        muxB_en <= 2'd1;
-        regWriteAddSelect = 2'b0;
-        ALUop <= `SUBSIGNAL;
+        dm_mux = 1'b0;
+        alu_b_mux <= 2'd1;
+        regmux = 2'b0;
+        alu_op <= `SUBSIGNAL;
         if(zero) begin
-          muxPC <= 2'd3;
+          pcmux <= 2'd3;
         end else begin
-          muxPC <= 2'd0;
+          pcmux <= 2'd0;
         end
       end
 
       `BNE: begin
-        regWrite <= 1'b0;
-        muxA_en <= 1'b0;
+        reg_we <= 1'b0;
+        alu_a_mux <= 1'b0;
         dm_we <= 1'b0;
-        muxWD3_en = 1'b0;
-        muxB_en <= 2'd1;
-        regWriteAddSelect = 2'b0;
-        ALUop <= `SUBSIGNAL;
+        dm_mux = 1'b0;
+        alu_b_mux <= 2'd1;
+        regmux = 2'b0;
+        alu_op <= `SUBSIGNAL;
         if(nzero) begin
-          muxPC <= 2'd3;
+          pcmux <= 2'd3;
         end else begin
-          muxPC <= 2'd0;
+          pcmux <= 2'd0;
         end
       end
 
       `ADDI: begin
-        regWrite <= 1'b1;
-        muxA_en <= 1'b0; // Changed this to 1 from 0
+        reg_we <= 1'b1;
+        alu_a_mux <= 1'b0; // Changed this to 1 from 0
         dm_we <= 1'b0;
-        muxWD3_en <= 1'b1;
-        muxB_en = 2'd0;
-        regWriteAddSelect <= 2'b0;
-        muxPC <= 2'd0;
-        ALUop <= `ADDSIGNAL;
+        dm_mux <= 1'b1;
+        alu_b_mux = 2'd0;
+        regmux <= 2'b0;
+        pcmux <= 2'd0;
+        alu_op <= `ADDSIGNAL;
       end
 
       `XORI: begin
-        regWrite <= 1'b1;
-        muxA_en <= 1'b0;
+        reg_we <= 1'b1;
+        alu_a_mux <= 1'b0;
         dm_we <= 1'b0;
-        muxWD3_en <= 1'b1;
-        muxB_en <= 2'd0;
-        regWriteAddSelect <= 2'b0;
-        muxPC <= 2'b0;
-        ALUop <= `XORSIGNAL;
+        dm_mux <= 1'b1;
+        alu_b_mux <= 2'd0;
+        regmux <= 2'b0;
+        pcmux <= 2'b0;
+        alu_op <= `XORSIGNAL;
       end
 
       `JUMP: begin
-        regWrite <= 1'b0;
-        muxA_en = 1'b0;
+        reg_we <= 1'b0;
+        alu_a_mux = 1'b0;
         dm_we <= 1'b0;
-        muxWD3_en = 1'b0;
-        muxB_en = 1'b0;
-        regWriteAddSelect = 1'b0;
-        muxPC <= 2'b1;
-        ALUop <= `ADDSIGNAL;
+        dm_mux = 1'b0;
+        alu_b_mux = 1'b0;
+        regmux = 1'b0;
+        pcmux <= 2'b1;
+        alu_op <= `ADDSIGNAL;
       end
 
       `JAL: begin
-        regWrite <= 1'b1;
-        muxA_en <= 1'b1;
+        reg_we <= 1'b1;
+        alu_a_mux <= 1'b1;
         dm_we <= 1'b0;
-        muxWD3_en <= 1'b1;
-        muxB_en <= 2'd2;
-        regWriteAddSelect <= 2'b1;
-        muxPC <= 2'b1;
-        ALUop <= `ADDSIGNAL;
+        dm_mux <= 1'b1;
+        alu_b_mux <= 2'd2;
+        regmux <= 2'b1;
+        pcmux <= 2'b1;
+        alu_op <= `ADDSIGNAL;
       end
 
     endcase
