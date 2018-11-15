@@ -46,12 +46,12 @@ wire [4:0] rt_ID, rt_EX, rt_MEM, rt_WB;
 
 memory cpuMemory (
   .clk(clk),
-  .dataMemorydataOut(dataOut),
+  .dataMemorydataOut(ReadDataMem_MEM),
   .instructionOut(instruction_IF),
   .InstructionAddress(pc_IF), // initially we set these to [15:0], address are not full 32 bits???
-  .dataMemoryAddress(aluResult), //// address are not full 32 bits???
+  .dataMemoryAddress(result_MEM), //// address are not full 32 bits???
   .dataMemorywriteEnable(dm_we_MEM),
-  .dataMemorydataIn(readOut2)
+  .dataMemorydataIn(ReadData2_MEM)
   );
 
 programCounter pc (
