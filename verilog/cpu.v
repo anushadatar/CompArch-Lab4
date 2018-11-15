@@ -107,8 +107,8 @@ registerID regiID(
 );
 
 registerEX regiEX(
-  .q_ReadData1(ReadData1_ID),
-  .q_ReadData2(ReadData2_ID),
+  .q_ReadData1(ReadData1_MEM),
+  .q_ReadData2(ReadData2_MEM),
   .q_pc(pc_MEM),
   .q_result(result_MEM),
   .q_zeroflag(zeroflag_MEM),
@@ -174,7 +174,7 @@ registerMEM regiMEM(
 
 
 mux4to1by32 muxPC(
-  .address(pcmux_WB),
+  .address(pcmux_ID),
   .input0(pcPlusFour),
   .input1({pcPlusFour[31:28], jumpShifted}),
   .input2(readOut1),
@@ -185,29 +185,29 @@ mux4to1by32 muxPC(
 mux4to1by5 muxRegWriteSelect(
   .address(regmux_WB),
   .input0(rt_WB),
-  .input1(5'h1F),
-  .input2(raddress_WB),
+  .input1(raddress_WB),
+  .input2(5'h1F),
   .input3(5'b0),
   .out(regWrAddress)
   );
 
 mux2to1by32 muxB(
     .address(alu_b_mux_EX),
-    .input0(imm_ID),
-    .input1(readOut2),
+    .input0(ReadData2_EX),
+    .input1(imm_EX),
     .out(opB)
     );
 
 mux2to1by32 muxA(
   .address(alu_a_mux_EX),
-  .input0(readOut1),
-  .input1(pc_IF),
+  .input0(ReadData1_EX),
+  .input1(pc_EX),
   .out(opA)
   );
 
 mux2to1by32 muxWD3(
   .address(dm_mux_WB),
-  .input0(rd_WB),
+  .input0(ReadDataMem_WB),
   .input1(result_WB),
   .out(writeData)
   );
@@ -259,8 +259,12 @@ instructionDecoder opDecoder(
   .regmux(regmux_ID),
   .pcmux(pcmux_ID),
   .alu_op(alu_op_ID),
-  .reg_we(reg_we_ID)
-  );
+  .reg_we(reg_we_ID),
+  .raddressOut(raddress_ID),
+  .raddress(instruction_ID[15:11]),
+  .rtIn(instruction_ID[20:16]),
+  .rtOut(rt_ID)
+    );
 
 ALU pcAddFour(
   .operandA(32'd4),

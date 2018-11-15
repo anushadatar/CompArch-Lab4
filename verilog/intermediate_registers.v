@@ -51,6 +51,8 @@ module registerID
   input [31:0] d_rd,
   input [4:0] d_rt,
   input [4:0] d_raddress,
+
+
   input wrenable,
   input clk
 );
@@ -70,6 +72,8 @@ module registerID
       q_dm_we <= d_dm_we;
       q_alu_op <= d_alu_op;
       q_rd <= d_rd;
+      q_rt <= d_rt;
+      q_raddress <= d_raddress;
    end
   end
 
@@ -122,6 +126,8 @@ module registerEX
       q_zeroflag <= d_zeroflag;
       q_pc <= d_pc;
       q_rd <= d_rd;
+      q_rt <= d_rt;
+      q_raddress <= d_raddress;
     end
   end
 
@@ -174,6 +180,8 @@ module registerMEM
       q_ReadDataMem <= d_ReadDataMem;
       q_rd <= d_rd;
       q_pc <= d_pc;
+      q_rt <= d_rt;
+      q_raddress <= d_raddress;
     end
   end
 

@@ -13,7 +13,7 @@ initial begin
     $dumpfile("nohazard.vcd");
     $dumpvars();
 
-    $readmemh("benHillHappyPlace.text", dut.cpuMemory.memory, 0);
+    $readmemh("benHillIsEnteringStormyWaters.text", dut.cpuMemory.memory, 0);
     #250; // Run Program
     $finish();
 

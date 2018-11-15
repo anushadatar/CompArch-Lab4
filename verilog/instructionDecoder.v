@@ -31,11 +31,15 @@
 module instructionDecoder(
     input [5:0] opcode,
     input [5:0] functcode,
+    input [4:0] raddress,
+    input [4:0] rtIn,
     input zero,
 
     output reg dm_mux, reg_we, alu_a_mux, alu_b_mux, dm_we,
     output reg [1:0] regmux, pcmux,
-    output reg [2:0] alu_op
+    output reg [4:0] raddressOut,
+    output reg [2:0] alu_op,
+    output reg [4:0] rtOut
   );
 
   wire nzero;
@@ -48,19 +52,21 @@ module instructionDecoder(
   end
 
   always @(*) begin
+  raddressOut <= raddress;
+  rtOut <= rtIn;
     case(opcode)
 
       `RTYPE: begin
         dm_we <= 1'b0;
         alu_a_mux <= 1'b0;
         alu_b_mux <= 2'd0;
-        dm_mux <= 1'b0;
+        dm_mux <= 1'b1;
         regmux <= 2'd1;
 
         case(functcode)
           `JR: begin
             reg_we <= 1'b0;
-            pcmux <= 2'd2;
+            pcmux <= 2'd1;
             alu_op <= 3'd0;
           end
 
