@@ -32,7 +32,9 @@ module registerID
   output reg q_reg_we,
   output reg q_dm_we,
   output reg [2:0] q_alu_op,
-  output reg [4:0] q_rd,
+  output reg [31:0] q_rd,
+  output reg [4:0] q_rt,
+  output reg [4:0] q_raddress,
 
   input [31:0] d_ReadData1,
   input [31:0] d_ReadData2,
@@ -46,7 +48,9 @@ module registerID
   input d_reg_we,
   input d_dm_we,
   input [2:0] d_alu_op,
-  input [4:0] d_rd,
+  input [31:0] d_rd,
+  input [4:0] d_rt,
+  input [4:0] d_raddress,
   input wrenable,
   input clk
 );
@@ -82,8 +86,10 @@ module registerEX
   output reg q_reg_we,
   output reg q_dm_we,
   output reg q_zeroflag,
-  output reg [4:0] q_rd,
+  output reg [31:0] q_rd,
   output reg [31:0] q_pc,
+  output reg [4:0] q_rt,
+  output reg [4:0] q_raddress,
 
   input [31:0] d_ReadData1,
   input [31:0] d_ReadData2,
@@ -94,16 +100,18 @@ module registerEX
   input d_reg_we,
   input d_dm_we,
   input d_zeroflag,
-  input [4:0] d_rd,
+  input [31:0] d_rd,
   input [31:0] d_pc,
- 
+  input [4:0] d_rt,
+  input [4:0] d_raddress,
+
   input wrenable,
   input clk
 );
 
   always @(posedge clk) begin
     if(wrenable) begin
-      q_ReadData1 <= d_ReadData1;     
+      q_ReadData1 <= d_ReadData1;
       q_ReadData2 <= d_ReadData2;
       q_result <= d_result;
       q_pcmux <= d_pcmux;
@@ -130,7 +138,9 @@ module registerMEM
   output reg q_reg_we,
   output reg q_zeroflag,
   output reg [31:0] q_ReadDataMem,
-  output reg [4:0] q_rd,
+  output reg [31:0] q_rd,
+  output reg [4:0] q_rt,
+  output reg [4:0] q_raddress,
   output reg [31:0] q_pc,
 
   input [31:0] d_ReadData1,
@@ -142,7 +152,9 @@ module registerMEM
   input d_reg_we,
   input d_zeroflag,
   input [31:0] d_ReadDataMem,
-  input [4:0] d_rd,
+  input [31:0] d_rd,
+  input [4:0] d_rt,
+  input [4:0] d_raddress,
   input [31:0] d_pc,
 
   input wrenable,

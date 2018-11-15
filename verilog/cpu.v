@@ -38,9 +38,11 @@ wire dm_we_ID, dm_we_EX, dm_we_MEM;
 wire reg_we_ID, reg_we_EX, reg_we_MEM, reg_we_WB;
 wire [31:0] instruction_IF, instruction_ID;
 wire [31:0] ReadData1_EX, ReadData2_EX, ReadData1_ID, ReadData2_ID, ReadData1_MEM, ReadData2_MEM, ReadData1_WB, ReadData2_WB;
-wire [4:0] rd_ID, rd_EX, rd_MEM, rd_WB;
+wire [31:0] rd_ID, rd_EX, rd_MEM, rd_WB;
 wire [31:0] result_MEM, result_EX, result_WB;
 wire zeroflag_MEM, zeroflag_EX, zeroflag_WB;
+wire [4:0] raddress_ID, raddress_EX, raddress_MEM, raddress_WB;
+wire [4:0] rt_ID, rt_EX, rt_MEM, rt_WB;
 
 memory cpuMemory (
   .clk(clk),
@@ -81,6 +83,8 @@ registerID regiID(
   .q_rd(rd_EX),
   .q_reg_we(reg_we_EX),
   .q_dm_we(dm_we_EX),
+  .q_rt(rt_EX),
+  .q_raddress(raddress_EX),
 
   .d_ReadData1(ReadData1_ID),
   .d_ReadData2(ReadData2_ID),
@@ -93,8 +97,10 @@ registerID regiID(
   .d_dm_mux(dm_mux_ID),
   .d_alu_op(alu_op_ID),
   .d_rd(rd_ID),
-  .d_reg_we(reg_we_EX),
-  .d_dm_we(dm_we_EX),
+  .d_reg_we(reg_we_ID),
+  .d_dm_we(dm_we_ID),
+  .d_rt(rt_ID),
+  .d_raddress(raddress_ID),
 
   .wrenable(1'b1),
   .clk(clk)
@@ -112,6 +118,8 @@ registerEX regiEX(
   .q_rd(rd_MEM),
   .q_reg_we(reg_we_MEM),
   .q_dm_we(dm_we_MEM),
+  .q_rt(rt_MEM),
+  .q_raddress(raddress_MEM),
 
   .d_ReadData1(ReadData1_EX),
   .d_ReadData2(ReadData2_EX),
@@ -124,6 +132,8 @@ registerEX regiEX(
   .d_rd(rd_EX),
   .d_reg_we(reg_we_EX),
   .d_dm_we(dm_we_EX),
+  .d_rt(rt_EX),
+  .d_raddress(raddress_EX),
 
   .wrenable(1'b1),
   .clk(clk)
@@ -141,6 +151,8 @@ registerMEM regiMEM(
   .q_rd(rd_WB),
   .q_reg_we(reg_we_WB),
   .q_ReadDataMem(ReadDataMem_WB),
+  .q_rt(rt_WB),
+  .q_raddress(raddress_WB),
 
   .d_ReadData1(ReadData1_MEM),
   .d_ReadData2(ReadData2_MEM),
@@ -153,6 +165,9 @@ registerMEM regiMEM(
   .d_rd(rd_MEM),
   .d_reg_we(reg_we_MEM),
   .d_ReadDataMem(ReadDataMem_MEM),
+  .d_rt(rt_MEM),
+  .d_raddress(raddress_MEM),
+
   .wrenable(1'b1),
   .clk(clk)
 );
@@ -169,9 +184,9 @@ mux4to1by32 muxPC(
 
 mux4to1by5 muxRegWriteSelect(
   .address(regmux_WB),
-  .input0(instruction[20:16]),
+  .input0(rt_WB),
   .input1(5'h1F),
-  .input2(instruction[15:11]),
+  .input2(raddress_WB),
   .input3(5'b0),
   .out(regWrAddress)
   );
@@ -192,13 +207,13 @@ mux2to1by32 muxA(
 
 mux2to1by32 muxWD3(
   .address(dm_mux_WB),
-  .input0(dataOut),
-  .input1(aluResult),
+  .input0(rd_WB),
+  .input1(result_WB),
   .out(writeData)
   );
 
 signExtend signExtension(
-  .immediate(instruction[15:0]),
+  .immediate(instruction_ID[15:0]),
   .extended(imm_ID)
   );
 
@@ -217,25 +232,25 @@ ALU OpALU(
   .operandB(opB),
   .command(alu_op_EX),
   .overflow(),
-  .zero(zeroFlag),
+  .zero(zeroflag_EX),
   .carryout(),
-  .result(aluResult)
+  .result(result_EX)
   );
 
 regfile registerFile(
   .Clk(clk),
   .RegWrite(reg_we_WB),
   .WriteRegister(regWrAddress),
-  .ReadRegister1(instruction_IF[25:21]),
-  .ReadRegister2(instruction_IF[20:16]),
+  .ReadRegister1(instruction_ID[25:21]),
+  .ReadRegister2(instruction_ID[20:16]),
   .WriteData(writeData),
-  .ReadData1(readOut1),
-  .ReadData2(readOut2)
+  .ReadData1(ReadData1_ID),
+  .ReadData2(ReadData2_ID)
   );
 
 instructionDecoder opDecoder(
-  .opcode(instruction_IF[31:26]),
-  .functcode(instruction_IF[5:0]),
+  .opcode(instruction_ID[31:26]),
+  .functcode(instruction_ID[5:0]),
   .zero(zeroFlag),
   .dm_we(dm_we_ID),
   .dm_mux(dm_mux_ID),

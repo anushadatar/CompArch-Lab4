@@ -34,7 +34,7 @@ module instructionDecoder(
     input zero,
 
     output reg dm_mux, reg_we, alu_a_mux, alu_b_mux, dm_we,
-    output reg [1:0] regmux, pcmux, 
+    output reg [1:0] regmux, pcmux,
     output reg [2:0] alu_op
   );
 
@@ -53,9 +53,9 @@ module instructionDecoder(
       `RTYPE: begin
         dm_we <= 1'b0;
         alu_a_mux <= 1'b0;
-        alu_b_mux <= 2'd1;
-        dm_mux <= 1'b1;
-        regmux <= 2'd2;
+        alu_b_mux <= 2'd0;
+        dm_mux <= 1'b0;
+        regmux <= 2'd1;
 
         case(functcode)
           `JR: begin
@@ -87,8 +87,8 @@ module instructionDecoder(
         reg_we <= 1'b1;
         alu_a_mux <= 1'b0;
         dm_we <= 1'b0;
-        dm_mux <= 1'b0;
-        alu_b_mux <= 2'd0;
+        dm_mux <= 1'b1;
+        alu_b_mux <= 2'd1;
         regmux <= 2'd0;
         pcmux <= 2'd0;
         alu_op <= `ADDSIGNAL;
@@ -99,7 +99,7 @@ module instructionDecoder(
         alu_a_mux <= 1'b0;
         dm_we <= 1'b1;
         dm_mux <= 1'b0;
-        alu_b_mux <= 2'd0;
+        alu_b_mux <= 2'd1;
         regmux <= 2'b0;
         pcmux <= 2'd0;
         alu_op <= `ADDSIGNAL;
@@ -110,7 +110,7 @@ module instructionDecoder(
         alu_a_mux <= 1'b0;
         dm_we <= 1'b0;
         dm_mux = 1'b0;
-        alu_b_mux <= 2'd1;
+        alu_b_mux <= 2'd0;
         regmux = 2'b0;
         alu_op <= `SUBSIGNAL;
         if(zero) begin
@@ -125,7 +125,7 @@ module instructionDecoder(
         alu_a_mux <= 1'b0;
         dm_we <= 1'b0;
         dm_mux = 1'b0;
-        alu_b_mux <= 2'd1;
+        alu_b_mux <= 2'd0;
         regmux = 2'b0;
         alu_op <= `SUBSIGNAL;
         if(nzero) begin
@@ -140,7 +140,7 @@ module instructionDecoder(
         alu_a_mux <= 1'b0; // Changed this to 1 from 0
         dm_we <= 1'b0;
         dm_mux <= 1'b1;
-        alu_b_mux = 2'd0;
+        alu_b_mux = 2'd1;
         regmux <= 2'b0;
         pcmux <= 2'd0;
         alu_op <= `ADDSIGNAL;
@@ -151,18 +151,18 @@ module instructionDecoder(
         alu_a_mux <= 1'b0;
         dm_we <= 1'b0;
         dm_mux <= 1'b1;
-        alu_b_mux <= 2'd0;
+        alu_b_mux <= 2'd1;
         regmux <= 2'b0;
         pcmux <= 2'b0;
         alu_op <= `XORSIGNAL;
       end
 
       `JUMP: begin
-        reg_we <= 1'b0;
+        reg_we <= 1'b1;
         alu_a_mux = 1'b0;
         dm_we <= 1'b0;
-        dm_mux = 1'b0;
-        alu_b_mux = 1'b0;
+        dm_mux = 1'b1;
+        alu_b_mux = 1'b1;
         regmux = 1'b0;
         pcmux <= 2'b1;
         alu_op <= `ADDSIGNAL;
