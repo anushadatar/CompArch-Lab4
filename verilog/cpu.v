@@ -43,6 +43,7 @@ wire [31:0] result_MEM, result_EX, result_WB;
 wire zeroflag_MEM, zeroflag_EX, zeroflag_WB;
 wire [4:0] raddress_ID, raddress_EX, raddress_MEM, raddress_WB;
 wire [4:0] rt_ID, rt_EX, rt_MEM, rt_WB;
+wire [27:0] jumpShifted_ID, jumpShifted_EX, jumpShifted_MEM, jumpShifted_WB;
 
 memory cpuMemory (
   .clk(clk),
@@ -85,6 +86,7 @@ registerID regiID(
   .q_dm_we(dm_we_EX),
   .q_rt(rt_EX),
   .q_raddress(raddress_EX),
+  .q_jumpShifted(jumpShifted_EX),
 
   .d_ReadData1(ReadData1_ID),
   .d_ReadData2(ReadData2_ID),
@@ -101,7 +103,7 @@ registerID regiID(
   .d_dm_we(dm_we_ID),
   .d_rt(rt_ID),
   .d_raddress(raddress_ID),
-
+  .d_jumpShifted(jumpShifted_ID),
   .wrenable(1'b1),
   .clk(clk)
 );
@@ -120,6 +122,7 @@ registerEX regiEX(
   .q_dm_we(dm_we_MEM),
   .q_rt(rt_MEM),
   .q_raddress(raddress_MEM),
+  .q_jumpShifted(jumpShifted_MEM),
 
   .d_ReadData1(ReadData1_EX),
   .d_ReadData2(ReadData2_EX),
@@ -134,6 +137,7 @@ registerEX regiEX(
   .d_dm_we(dm_we_EX),
   .d_rt(rt_EX),
   .d_raddress(raddress_EX),
+  .d_jumpShifted(jumpShifted_EX),
 
   .wrenable(1'b1),
   .clk(clk)
@@ -153,6 +157,7 @@ registerMEM regiMEM(
   .q_ReadDataMem(ReadDataMem_WB),
   .q_rt(rt_WB),
   .q_raddress(raddress_WB),
+  .q_jumpShifted(jumpShifted_WB),
 
   .d_ReadData1(ReadData1_MEM),
   .d_ReadData2(ReadData2_MEM),
@@ -167,6 +172,7 @@ registerMEM regiMEM(
   .d_ReadDataMem(ReadDataMem_MEM),
   .d_rt(rt_MEM),
   .d_raddress(raddress_MEM),
+  .d_jumpShifted(jumpShifted_MEM),
 
   .wrenable(1'b1),
   .clk(clk)
@@ -176,7 +182,7 @@ registerMEM regiMEM(
 mux4to1by32 muxPC(
   .address(pcmux_ID),
   .input0(pcPlusFour),
-  .input1({pcPlusFour[31:28], jumpShifted}),
+  .input1({pcPlusFour[31:28], jumpShifted_WB}),
   .input2(readOut1),
   .input3(branchAddress),
   .out(pcIn)
@@ -223,8 +229,8 @@ lshift32 shiftSignExt(
   );
 
 lshift28 shiftPC(
-  .immediate(instruction[25:0]),
-  .lshifted(jumpShifted)
+  .immediate(instruction_ID[25:0]),
+  .lshifted(jumpShifted_WB)
   );
 
 ALU OpALU(

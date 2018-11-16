@@ -35,6 +35,7 @@ module registerID
   output reg [31:0] q_rd,
   output reg [4:0] q_rt,
   output reg [4:0] q_raddress,
+  output reg [27:0] q_jumpShifted,
 
   input [31:0] d_ReadData1,
   input [31:0] d_ReadData2,
@@ -51,6 +52,7 @@ module registerID
   input [31:0] d_rd,
   input [4:0] d_rt,
   input [4:0] d_raddress,
+  input [27:0] d_jumpShifted,
 
 
   input wrenable,
@@ -74,6 +76,7 @@ module registerID
       q_rd <= d_rd;
       q_rt <= d_rt;
       q_raddress <= d_raddress;
+      q_jumpShifted <= d_jumpShifted;
    end
   end
 
@@ -94,6 +97,7 @@ module registerEX
   output reg [31:0] q_pc,
   output reg [4:0] q_rt,
   output reg [4:0] q_raddress,
+  output reg [27:0] q_jumpShifted,
 
   input [31:0] d_ReadData1,
   input [31:0] d_ReadData2,
@@ -108,6 +112,7 @@ module registerEX
   input [31:0] d_pc,
   input [4:0] d_rt,
   input [4:0] d_raddress,
+  input [27:0] d_jumpShifted,
 
   input wrenable,
   input clk
@@ -128,6 +133,7 @@ module registerEX
       q_rd <= d_rd;
       q_rt <= d_rt;
       q_raddress <= d_raddress;
+      q_jumpShifted <= d_jumpShifted;
     end
   end
 
@@ -148,6 +154,7 @@ module registerMEM
   output reg [4:0] q_rt,
   output reg [4:0] q_raddress,
   output reg [31:0] q_pc,
+  output reg [27:0] q_jumpShifted,
 
   input [31:0] d_ReadData1,
   input [31:0] d_ReadData2,
@@ -162,6 +169,7 @@ module registerMEM
   input [4:0] d_rt,
   input [4:0] d_raddress,
   input [31:0] d_pc,
+  input [27:0] d_jumpShifted,
 
   input wrenable,
   input clk
@@ -182,6 +190,7 @@ module registerMEM
       q_pc <= d_pc;
       q_rt <= d_rt;
       q_raddress <= d_raddress;
+      q_jumpShifted <= d_jumpShifted;
     end
   end
 

@@ -28,27 +28,47 @@
 `define ORSIGNAL   3'd7
 
 
-module instructionDecoder(
-    input [5:0] opcode,
-    input [5:0] functcode,
-    input [4:0] raddress,
-    input [4:0] rtIn,
-    input zero,
+module hazardPatrol(
+    input [31:0] instruction_ID,
 
-    output reg dm_mux, reg_we, alu_a_mux, alu_b_mux, dm_we,
-    output reg [1:0] regmux, pcmux,
-    output reg [4:0] raddressOut,
-    output reg [2:0] alu_op,
-    output reg [4:0] rtOut
+    output regIF_en, regID_en, nopMux,
   );
 
   wire nzero;
   not not0(nzero, zero);
+  reg [1:0] counter;
+
+
 
   initial begin
-    pcmux = 2'b0;
-    alu_a_mux = 1'b0;
-    alu_b_mux = 1'b0;
+    rs = instruction_ID[26:21];
+    rt = instruction_ID[20:16];
+    rd = instruction_ID[15:11];
+    immediate = instruction_ID[15:0];
+  end
+
+  always @(posedge clk) begin
+    
+    One_Before_Rs <= rs;
+    Two_Before_Rs <= One_Before_Rs;
+    Three_Before_Rs <= Two_Before_Rs;
+
+    One_Before_Rt <= rt;
+    Two_Before_Rt <= One_Before_Rt;
+    Three_Before_Rt <= Two_Before_Rt;
+
+    One_Before_Rd <= rd;
+    Two_Before_Rd <= One_Before_Rd;
+    Three_Before_Rd <= Two_Before_Rd;
+
+    if(instruction_ID[31:26] == RTYPE) begin
+      if(One_Before_Rs == rd || Two_Before_Rs == rd || Three_Before_Rs == rd) begin
+        regIF_en <= 0;
+        regID_en <= 0;
+        nopMux <= 1;
+      end
+
+
   end
 
   always @(*) begin
