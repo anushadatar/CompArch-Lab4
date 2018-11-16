@@ -27,6 +27,7 @@ module registerID
   output reg [1:0] q_pcmux,
   output reg [1:0] q_regmux,
   output reg q_alu_a_mux,
+  output reg programCounter,
   output reg q_alu_b_mux,
   output reg q_dm_mux,
   output reg q_reg_we,
@@ -77,6 +78,24 @@ module registerID
       q_rt <= d_rt;
       q_raddress <= d_raddress;
       q_jumpShifted <= d_jumpShifted;
+   end
+   else begin
+     q_ReadData1 <= 0;
+     q_ReadData2 <= 0;
+     q_pc <= 0;
+     q_imm <= 0;
+     q_pcmux <= 0;
+     q_regmux <= 0;
+     q_alu_a_mux <= 0;
+     q_alu_b_mux <= 0;
+     q_dm_mux <= 0;
+     q_reg_we <= 0;
+     q_dm_we <= 0;
+     q_alu_op <= 0;
+     q_rd <= 0;
+     q_rt <= 0;
+     q_raddress <= 0;
+     q_jumpShifted <= 0;
    end
   end
 

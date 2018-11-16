@@ -7,12 +7,13 @@
 `include "regfile.v"
 `include "dff.v"
 `include "intermediate_registers.v"
+`include "hazardPatrol.v"
 
 module cpu(
   input clk
 );
 
-wire [31:0] pcIn, instruction, dataOut;
+wire [31:0] pcIn,dataOut;
 wire [31:0] opA, opB;
 wire [4:0] regWrAddress;
 wire [31:0] writeData;
@@ -20,7 +21,7 @@ wire [31:0] imm_ID, imm_EX;
 wire [31:0] branchALUin;
 wire [27:0] jumpShifted;
 wire [31:0] aluResult;
-wire zeroFlag;
+wire zeroFlag, noopMuxOut, regIFEN, regIDEN, pc_wrenable;
 wire [31:0] readOut1, readOut2;
 wire [31:0] pcPlusFour;
 wire [31:0] branchAddress;
@@ -36,7 +37,7 @@ wire alu_a_mux_ID, alu_a_mux_EX;
 wire alu_b_mux_ID, alu_b_mux_EX;
 wire dm_we_ID, dm_we_EX, dm_we_MEM;
 wire reg_we_ID, reg_we_EX, reg_we_MEM, reg_we_WB;
-wire [31:0] instruction_IF, instruction_ID;
+wire [31:0] instruction_IF, instruction_ID, noopOut;
 wire [31:0] ReadData1_EX, ReadData2_EX, ReadData1_ID, ReadData2_ID, ReadData1_MEM, ReadData2_MEM, ReadData1_WB, ReadData2_WB;
 wire [31:0] rd_ID, rd_EX, rd_MEM, rd_WB;
 wire [31:0] result_MEM, result_EX, result_WB;
@@ -45,6 +46,18 @@ wire [4:0] raddress_ID, raddress_EX, raddress_MEM, raddress_WB;
 wire [4:0] rt_ID, rt_EX, rt_MEM, rt_WB;
 wire [27:0] jumpShifted_ID, jumpShifted_EX, jumpShifted_MEM, jumpShifted_WB;
 
+hazardPatrol expo(
+  .noopOut(noopOut),
+  .clk(clk),
+  .nopMux(noopMuxOut),
+  .pcEnable(pc_wrenable)
+  );
+mux2to1by32 noop(
+  .input0(instruction_IF),
+  .input1(32'b0),
+  .address(noopMuxOut),
+  .out(noopOut)
+  );
 memory cpuMemory (
   .clk(clk),
   .dataMemorydataOut(ReadDataMem_MEM),
@@ -58,7 +71,8 @@ memory cpuMemory (
 programCounter pc (
   .d(pcIn),
   .clk(clk),
-  .q(pc_IF)
+  .q(pc_IF),
+  .wrenable(pc_wrenable)
   );
 
 registerIF regiIF(
@@ -66,7 +80,7 @@ registerIF regiIF(
   .q_pc(pc_ID),
   .d_instruction(instruction_IF),
   .d_pc(pc_IF),
-  .wrenable(1'b1),
+  .wrenable(regIFEN),
   .clk(clk)
 );
 
@@ -183,7 +197,7 @@ mux4to1by32 muxPC(
   .address(pcmux_ID),
   .input0(pcPlusFour),
   .input1({pcPlusFour[31:28], jumpShifted_WB}),
-  .input2(readOut1),
+  .input2(ReadData1_WB),
   .input3(branchAddress),
   .out(pcIn)
   );
@@ -219,7 +233,7 @@ mux2to1by32 muxWD3(
   );
 
 signExtend signExtension(
-  .immediate(instruction_ID[15:0]),
+  .immediate(noopOut[15:0]),
   .extended(imm_ID)
   );
 
@@ -229,7 +243,7 @@ lshift32 shiftSignExt(
   );
 
 lshift28 shiftPC(
-  .immediate(instruction_ID[25:0]),
+  .immediate(noopOut[25:0]),
   .lshifted(jumpShifted_WB)
   );
 
@@ -247,16 +261,16 @@ regfile registerFile(
   .Clk(clk),
   .RegWrite(reg_we_WB),
   .WriteRegister(regWrAddress),
-  .ReadRegister1(instruction_ID[25:21]),
-  .ReadRegister2(instruction_ID[20:16]),
+  .ReadRegister1(noopOut[25:21]),
+  .ReadRegister2(noopOut[20:16]),
   .WriteData(writeData),
   .ReadData1(ReadData1_ID),
   .ReadData2(ReadData2_ID)
   );
 
 instructionDecoder opDecoder(
-  .opcode(instruction_ID[31:26]),
-  .functcode(instruction_ID[5:0]),
+  .opcode(noopOut[31:26]),
+  .functcode(noopOut[5:0]),
   .zero(zeroFlag),
   .dm_we(dm_we_ID),
   .dm_mux(dm_mux_ID),
@@ -267,8 +281,8 @@ instructionDecoder opDecoder(
   .alu_op(alu_op_ID),
   .reg_we(reg_we_ID),
   .raddressOut(raddress_ID),
-  .raddress(instruction_ID[15:11]),
-  .rtIn(instruction_ID[20:16]),
+  .raddress(noopOut[15:11]),
+  .rtIn(noopOut[20:16]),
   .rtOut(rt_ID)
     );
 

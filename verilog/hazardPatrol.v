@@ -28,66 +28,103 @@
 `define ORSIGNAL   3'd7
 
 
-module hazardPatrolRType (
+module hazardPatrol(
     input [31:0] noopOut,
     input clk,
 
     output reg regIF_en, regID_en, nopMux, pcEnable
   );
 
-  wire nzero, zero, rtype;
+  wire nzero, zero;
   not nalgene(nzero, zero);
   reg [1:0] counter;
 
-  reg [5:0] rs, One_Before_Rs, Two_Before_Rs, Three_Before_Rs;
-  reg [5:0] rt, One_Before_Rt, Two_Before_Rt, Three_Before_Rt;
-  reg [5:0] rd, One_Before_Rd, Two_Before_Rd, Three_Before_Rd;
-    
+  reg [5:0] nush1, nush2, nush3, nush4;
+  reg [5:0] opcode, rt, rd, rs;
+  reg  rtype, itype, jtype, count3, count2, count1;
+
   always @(posedge clk) begin
-        rs <= noopOut[26:21];
-        rt <= noopOut[20:16];
-        rd <= noopOut[15:11];
+        opcode <= noopOut[31:26];
+        //rs <= noopOut[25:21];
+        //rt <= noopOut[20:16];
+        //rd <= noopOut[15:11];
+        itype = (noopOut[31:26] == `ADDI || noopOut[31:26] == `XORI || noopOut[31:26] == `LW || noopOut[31:26] == `SW);
+        rtype = (noopOut[31:26] == `RTYPE);
+        jtype = (noopOut[31:26] == `JUMP);
 
-        One_Before_Rs <= rs;
-        Two_Before_Rs <= One_Before_Rs;
-        Three_Before_Rs <= Two_Before_Rs;
-        One_Before_Rt <= rt;
-        Two_Before_Rt <= One_Before_Rt;
-        Three_Before_Rt <= Two_Before_Rt;
+        nush4 <= nush3;
+        nush3 <= nush2;
+        nush2 <= nush1;
 
-        One_Before_Rd <= rd;
-        Two_Before_Rd <= One_Before_Rd;
-        Three_Before_Rd <= Two_Before_Rd;
-    
-        rs <= noopOut[26:21];
-        if(One_Before_Rd == rs || Two_Before_Rd == rs || Three_Before_Rd == rs) begin
-          regIF_en <= 0;
-          regID_en <= 0;
-          nopMux <= 1;
-          pcEnable <= 0;
+        if(itype) begin
+          nush1 <= noopOut[20:16];
+          count3 <= count2;
+          count2 <= count1;
+          count1 <= 1;
+          if(noopOut[25:21] == nush2 || noopOut[25:21] == nush3 || noopOut[25:21] == nush4) begin
+            regIF_en <= 0;
+            regID_en <= 0;
+            nopMux <= 1;
+            pcEnable <= 0;
+          end
+          else begin
+            regIF_en <= 1;
+            regID_en <= 1;
+            nopMux <= 0;
+            pcEnable <= 1;
+          end
         end
-        else if (One_Before_Rd == rt || Two_Before_Rd == rt || Three_Before_Rd == rt) begin
+        else if(rtype && noopOut != 32'b0) begin
+          nush1 <= noopOut[15:11];
+          count3 <= count2;
+          count2 <= count1;
+          count1 <= 1;
+          if(noopOut[25:21] == nush2 || noopOut[25:21] == nush3 || noopOut[25:21] == nush4) begin
+            regIF_en <= 0;
+            regID_en <= 0;
+            nopMux <= 1;
+            pcEnable <= 0;
+          end
+          else if(noopOut[20:16] == nush2 || noopOut[20:16] == nush3 || noopOut[20:16] == nush4) begin
+            regIF_en <= 0;
+            regID_en <= 0;
+            nopMux <= 1;
+            pcEnable <= 0;
+          end
+          else begin
+            regIF_en <= 1;
+            regID_en <= 1;
+            nopMux <= 0;
+            pcEnable <= 1;
+          end
+        end
+        else if(jtype) begin
+          nush1 <= 6'b0;
+          count3 <= 0;
+          count2 <= 0;
+          count1 <= 1;
           regIF_en <= 0;
           regID_en <= 0;
           nopMux <= 1;
           pcEnable <= 0;
+
         end
         else begin
-          regIF_en <= 1;
-          regID_en <= 1;
-          nopMux <= 0;
-          pcEnable <= 1;
+          if(count3 == 0) begin
+            regIF_en <= 0;
+            regID_en <= 0;
+            nopMux <= 1;
+            pcEnable <= 0;
+            count3 <= count2;
+            count2 <= count1;
+            count1 <= 1;
         end
+        else begin
+            regIF_en <= 1;
+            regID_en <= 1;
+            nopMux <= 0;
+            pcEnable <= 1;
+        end
+      end
     end
-  end
 endmodule
-
-module hazardPatrolJump (
-    input clk,
-    input[31:0] noopOut, 
-    output reg regIF_en, regID_en, nopMux
-  );
-  
-
-endmodule
-
