@@ -29,10 +29,10 @@
 
 
 module hazardPatrolRType (
-    input [31:0] noopOut,
+    input [31:0] instruction_ID,
     input clk,
 
-    output reg regIF_en, regID_en, nopMux, pcEnable
+    output reg regIF_en, regID_en, nopMux
   );
 
   wire nzero, zero, rtype;
@@ -43,11 +43,20 @@ module hazardPatrolRType (
   reg [5:0] rt, One_Before_Rt, Two_Before_Rt, Three_Before_Rt;
   reg [5:0] rd, One_Before_Rd, Two_Before_Rd, Three_Before_Rd;
     
-  always @(posedge clk) begin
-        rs <= noopOut[26:21];
-        rt <= noopOut[20:16];
-        rd <= noopOut[15:11];
+  reg[15:0] immediate; 
+ 
+  initial begin
+    counter <= 2'd3;
+  end
 
+  always @(posedge clk) begin
+    if (instruction_ID[31:26] == `RTYPE) begin
+    rs <= instruction_ID[26:21];
+    rt <= instruction_ID[20:16];
+    rd <= instruction_ID[15:11];
+    immediate <= instruction_ID[15:0];
+
+    if(counter == 2'd3) begin    
         One_Before_Rs <= rs;
         Two_Before_Rs <= One_Before_Rs;
         Three_Before_Rs <= Two_Before_Rs;
@@ -59,35 +68,43 @@ module hazardPatrolRType (
         Two_Before_Rd <= One_Before_Rd;
         Three_Before_Rd <= Two_Before_Rd;
     
-        rs <= noopOut[26:21];
-        if(One_Before_Rd == rs || Two_Before_Rd == rs || Three_Before_Rd == rs) begin
+        if(One_Before_Rs == rd || One_Before_Rt == rd || One_Before_Rd == rt || One_Before_Rd == rs) begin
           regIF_en <= 0;
           regID_en <= 0;
           nopMux <= 1;
-          pcEnable <= 0;
+          counter <= 2'd0;
         end
-        else if (One_Before_Rd == rt || Two_Before_Rd == rt || Three_Before_Rd == rt) begin
+        if(Two_Before_Rs == rd || Two_Before_Rt == rd || Two_Before_Rd == rt || Two_Before_Rd == rs) begin
           regIF_en <= 0;
           regID_en <= 0;
           nopMux <= 1;
-          pcEnable <= 0;
+          counter <= 2'd1;
         end
-        else begin
-          regIF_en <= 1;
-          regID_en <= 1;
-          nopMux <= 0;
-          pcEnable <= 1;
+        if(Three_Before_Rs == rd || Three_Before_Rt == rd || Three_Before_Rd == rt || Three_Before_Rd == rs) begin
+          regIF_en <= 0;
+          regID_en <= 0;
+          nopMux <= 1;
+          counter <= 2'd2;
         end
+      
     end
-  end
+    else begin
+        counter <= counter + 2'd1;
+    end 
+    end
+    end
 endmodule
+
 
 module hazardPatrolJump (
     input clk,
-    input[31:0] noopOut, 
+    input[31:0] instruction_ID, 
     output reg regIF_en, regID_en, nopMux
   );
-  
+    reg[1:0] counter;
+    initial begin
+        counter <= 2'd3
+    end
 
 endmodule
 
