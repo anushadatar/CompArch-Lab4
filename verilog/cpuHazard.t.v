@@ -13,8 +13,8 @@ initial begin
     $dumpfile("hazard.vcd");
     $dumpvars();
 
-    $readmemh("benHilllBeginsExercising.text", dut.cpuMemory.memory, 0);
-    //$readmemh("benHillRemembers.data", dut.cpuMemory.memory, 16'h2000);
+    $readmemh("tests/memory_test.text", dut.cpuMemory.memory, 0);
+    //$readmemh("tests/memory_test.data", dut.cpuMemory.memory, 16'h2000);
     #420; // Run Program
     $finish();
 
