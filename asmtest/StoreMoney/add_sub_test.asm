@@ -1,6 +1,5 @@
-# Loads values into $t1 and $t2, adds them together then subtracts an immediate from the result
-
-addi $t1,$zero,100
-addi $t2,$zero,100
-
-  
+addi $t0, $zero, 2
+j END
+addi $t0, $t0, 67
+END:
+addi $t1, $zero, 420

@@ -13,8 +13,9 @@ initial begin
     $dumpfile("nohazard.vcd");
     $dumpvars();
 
-    $readmemh("benHillIsEnteringStormyWaters.text", dut.cpuMemory.memory, 0);
-    #250; // Run Program
+    $readmemh("benHilllBeginsExercising.text", dut.cpuMemory.memory, 0);
+    //$readmemh("benHillRemembers.data", dut.cpuMemory.memory, 16'h2000);
+    #420; // Run Program
     $finish();
 
   end

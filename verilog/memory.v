@@ -29,18 +29,20 @@ module memory
 
    reg [width-1:0]           memory [depth-1:0];
 
-   assign compactInstructionAddress = InstructionAddress[14:0];
-   assign compactDataMemoryAddress = dataMemoryAddress[14:0];
+  assign compactInstructionAddress = InstructionAddress[14:0];
+  assign compactDataMemoryAddress = dataMemoryAddress[14:0];
 
    always @(posedge clk) begin
       if(dataMemorywriteEnable)
-        memory[compactDataMemoryAddress] <= dataMemorydataIn;
+          memory[compactDataMemoryAddress] <= dataMemorydataIn;
+  //        memory[dataMemoryAddress] <= dataMemorydataIn;
    end
 
    // initial $readmemh("test1.text", memory, 0);
    // initial $readmemh("test1.data", memory, 16'h1000);
 
    assign dataMemorydataOut = memory[compactDataMemoryAddress];
+   //assign dataMemorydataOut = memory[dataMemoryAddress];
    assign instructionOut = memory[compactInstructionAddress>>2];
 
 endmodule

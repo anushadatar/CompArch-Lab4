@@ -25,7 +25,7 @@ initial begin
     $dumpvars();
 
     $readmemh("hanoi.text", dut.cpuMemory.memory, 0);
-    $readmemh("empty.data", dut.cpuMemory.memory, 16'h1000);
+    $readmemh("empty.data", dut.cpuMemory.memory, 16'h2000);
     #5000
     if (dut.registerFile.mainReg[5'd2].register.q == 32'h10e)begin//dut.registerFile.mainReg[5'd1].register.q == 32'h1 &&  && dut.registerFile.mainReg[5'd4].register.q == 32'h1 && dut.registerFile.mainReg[5'd5].register.q == 32'h8) begin
       $display("Test 4 Passed");
